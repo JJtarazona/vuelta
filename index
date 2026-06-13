@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOC — Turnos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;
+  --glass:#ffffff08;
+  --glass2:#ffffff0d;
+  --glass3:#ffffff14;
+  --border:#ffffff12;
+  --border2:#ffffff1e;
+  --border3:#ffffff2e;
+  --text:#f0f2ff;
+  --text2:#8b90a8;
+  --text3:#4a5070;
+  --orange:#ff9340;
+  --orange2:#ffb870;
+  --green:#3de5a0;
+  --green2:#80f0c0;
+  --blue:#5b9fff;
+  --blue2:#90c0ff;
+  --purple:#a78bfa;
+  --yellow2:#fde68a;
+}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  height:100vh;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 55% 45% at 10% 15%,#162a5515 0%,transparent 60%),
+    radial-gradient(ellipse 45% 40% at 88% 80%,#1a0a2815 0%,transparent 60%),
+    radial-gradient(ellipse 35% 55% at 50% 45%,#0a1a0a12 0%,transparent 70%);
+}
+.wrap{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;padding:14px 20px 12px;gap:10px}
+
+/* TOPBAR */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--glass2);border:1px solid var(--border2);
+  border-radius:14px;padding:10px 18px;flex-shrink:0
+}
+.tb-left{display:flex;align-items:center;gap:12px}
+.noc-badge{
+  width:34px;height:34px;border-radius:9px;
+  background:linear-gradient(135deg,#2a3a6a,#1a2050);
+  border:1px solid #3a4a8a;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:900;color:var(--blue2)
+}
+.tb-title{font-size:15px;font-weight:700;color:var(--text)}
+.tb-sep{width:1px;height:24px;background:var(--border2);margin:0 2px}
+.ass-pill{
+  display:flex;align-items:center;gap:7px;
+  background:linear-gradient(90deg,#1a1060,#0a1a40);
+  border:1px solid #3a2a8a;border-radius:20px;padding:5px 14px
+}
+.ap-dot{width:7px;height:7px;border-radius:50%;background:var(--purple);box-shadow:0 0 7px var(--purple);flex-shrink:0}
+.ap-label{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--purple)}
+.tb-right{display:flex;align-items:center}
+.clock{font-size:30px;font-weight:200;color:var(--text);letter-spacing:5px;font-variant-numeric:tabular-nums;line-height:1}
+.clock-date{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:2px;text-align:right}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+@keyframes blink{0%,100%{opacity:1}40%{opacity:0.2}}
+
+/* MAIN GRID: left col + right col */
+.main-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  flex:1;min-height:0
+}
+
+/* LEFT COLUMN: caidas + degradaciones stacked */
+.left-col{display:flex;flex-direction:column;gap:10px;min-height:0}
+
+/* PANEL generic */
+.panel{
+  background:var(--glass2);border:1px solid var(--border2);
+  border-radius:16px;overflow:hidden;
+  display:flex;flex-direction:column
+}
+.panel-hdr{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;border-bottom:1px solid var(--border);flex-shrink:0
+}
+.phdr-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dot-o{background:var(--orange);box-shadow:0 0 8px var(--orange)}
+.dot-g{background:var(--green);box-shadow:0 0 8px var(--green)}
+.panel-title{font-size:13px;font-weight:700;color:var(--text)}
+.panel-body{padding:10px 14px;display:flex;flex-direction:column;gap:9px;flex:1;overflow:hidden}
+
+/* CLIENT TAGS */
+.clients-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.ctag{font-size:13px;font-weight:700;padding:5px 13px;border-radius:9px;letter-spacing:0.3px}
+.ctag-o{background:#ff934022;color:var(--orange2);border:1px solid #ff934045}
+.ctag-g{background:#3de5a020;color:var(--green2);border:1px solid #3de5a045}
+
+/* AGENT CARDS */
+.agent-card{
+  background:var(--glass3);border:1px solid var(--border2);
+  border-radius:11px;padding:10px 13px;
+  display:flex;align-items:center;gap:11px
+}
+.avatar{
+  width:40px;height:40px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800
+}
+.av-o{background:#ff934020;color:var(--orange);border:1.5px solid #ff934055}
+.av-g{background:#3de5a018;color:var(--green);border:1.5px solid #3de5a055}
+.av-b{background:#5b9fff18;color:var(--blue);border:1.5px solid #5b9fff55}
+.agent-name{font-size:15px;font-weight:600;color:var(--text);line-height:1.2}
+.agent-note{
+  display:inline-flex;align-items:center;gap:5px;margin-top:4px;
+  font-size:11px;font-weight:600;color:var(--yellow2);
+  background:#fbbf2418;border:1px solid #fbbf2435;
+  padding:3px 9px;border-radius:20px
+}
+
+/* DEG groups */
+.deg-wrap{display:flex;flex-direction:column;gap:8px;flex:1}
+.deg-group{background:var(--glass);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.deg-group-top{padding:8px 13px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:5px}
+.deg-group-body{padding:8px 13px;display:flex;flex-direction:column;gap:6px}
+
+/* N1 banner inside deg card */
+.deg-n1-banner{
+  display:flex;align-items:center;gap:10px;
+  background:#2a0c06;border-bottom:1px solid #8a2a14;
+  padding:9px 16px;flex-shrink:0
+}
+.dnb-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);box-shadow:0 0 8px var(--orange);flex-shrink:0;animation:blink 1s infinite}
+.dnb-text{font-size:12px;font-weight:700;color:#ff8060}
+.dnb-bold{font-size:14px;font-weight:900;color:var(--orange2);margin-left:3px}
+
+/* RIGHT COLUMN */
+.right-col{display:flex;flex-direction:column;gap:10px;min-height:0}
+
+/* ANUNCIO panel */
+.anuncio-panel{
+  background:var(--glass2);border:1px solid var(--border2);
+  border-radius:16px;overflow:hidden;
+  display:flex;flex-direction:column;flex-shrink:0
+}
+.anuncio-hdr{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;border-bottom:1px solid var(--border)
+}
+.anuncio-ico{
+  width:28px;height:28px;border-radius:8px;
+  background:#1a1a3a;border:1px solid #2a2a6a;
+  display:flex;align-items:center;justify-content:center;font-size:14px
+}
+.anuncio-title{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#7a8af8}
+.anuncio-body{padding:16px 20px;display:flex;flex-direction:column;gap:10px}
+.anuncio-rule{display:flex;align-items:flex-start;gap:12px}
+.anuncio-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.anuncio-dot.o{background:var(--orange);box-shadow:0 0 6px var(--orange)}
+.anuncio-dot.g{background:var(--green);box-shadow:0 0 6px var(--green)}
+.anuncio-text{font-size:15px;color:var(--text2);line-height:1.55}
+.anuncio-text strong{color:var(--text);font-weight:700}
+
+/* DEG HORARIO badge inside anuncio */
+.deg-status{margin-top:4px}
+.deg-active-badge{
+  display:inline-flex;align-items:center;gap:9px;
+  background:#0a2a18;border:1px solid #1a6a3a;border-radius:22px;
+  padding:7px 18px
+}
+.deg-active-badge .d-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex-shrink:0;animation:pulse 2s infinite}
+.deg-active-badge .d-lbl{font-size:12px;font-weight:700;color:var(--green)}
+.deg-active-badge .d-time{font-size:17px;font-weight:900;color:var(--green2);letter-spacing:1px}
+.deg-n1-badge{
+  display:inline-flex;align-items:center;gap:10px;
+  background:#2a0c06;border:1px solid #8a2a14;border-radius:22px;
+  padding:7px 18px
+}
+.deg-n1-badge .d-dot{width:9px;height:9px;border-radius:50%;background:var(--orange);box-shadow:0 0 10px var(--orange);flex-shrink:0;animation:blink 1s infinite}
+.deg-n1-badge .d-lbl{font-size:12px;font-weight:700;color:#ff8060}
+.deg-n1-badge .d-alert{font-size:18px;font-weight:900;color:var(--orange2);letter-spacing:0.5px}
+.deg-n1-badge .d-range{font-size:11px;color:var(--text3);margin-left:2px}
+
+/* TORRE panel */
+.torre-panel{
+  background:var(--glass2);border:1px solid var(--border2);
+  border-radius:16px;overflow:hidden;
+  display:flex;flex-direction:column;flex:1;min-height:0
+}
+.torre-hdr{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;border-bottom:1px solid var(--border);flex-shrink:0
+}
+.torre-ico{
+  width:28px;height:28px;border-radius:8px;
+  background:#1a1060;border:1px solid #3a2a8a;
+  display:flex;align-items:center;justify-content:center;font-size:14px
+}
+.torre-title-txt{font-size:13px;font-weight:700;color:var(--text)}
+.torre-sub-txt{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
+.torre-body{
+  display:flex;flex-direction:column;flex:1;overflow:hidden
+}
+.torre-col{
+  display:flex;align-items:center;gap:16px;
+  padding:12px 18px;border-bottom:1px solid var(--border);
+  flex:1
+}
+.torre-col:last-child{border-bottom:none}
+.shift-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--glass3);border:1px solid var(--border2);
+  border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;
+  color:var(--blue2);white-space:nowrap;flex-shrink:0
+}
+.shift-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);box-shadow:0 0 5px var(--blue);flex-shrink:0}
+.reg-tags{display:flex;flex-wrap:wrap;gap:5px;flex-shrink:0}
+.reg-tag{
+  font-size:13px;font-weight:800;padding:5px 12px;border-radius:8px;
+  background:#5b9fff1e;color:var(--blue2);border:1px solid #5b9fff35
+}
+.reg-tag.latam{background:#a78bfa1e;color:var(--purple);border-color:#a78bfa40}
+.torre-name{font-size:17px;font-weight:700;color:var(--text);line-height:1.2;flex:1}
+
+/* EDIT */
+.edit-btn{
+  position:fixed;bottom:16px;right:16px;z-index:50;
+  background:var(--glass3);border:1px solid var(--border3);
+  color:var(--text2);border-radius:10px;
+  padding:8px 16px;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:inherit;letter-spacing:0.5px
+}
+.edit-btn:hover{color:var(--text)}
+.edit-overlay{display:none;position:fixed;inset:0;background:#00000088;z-index:100}
+.edit-overlay.open{display:block}
+.edit-panel{
+  position:fixed;right:0;top:0;bottom:0;width:400px;
+  background:#131520;border-left:1px solid var(--border2);
+  overflow-y:auto;z-index:101;padding:22px;
+  display:flex;flex-direction:column;gap:13px
+}
+.ep-hdr{display:flex;align-items:center;justify-content:space-between}
+.ep-title{font-size:15px;font-weight:700;color:var(--text)}
+.ep-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;font-family:inherit}
+.ep-close:hover{color:var(--text)}
+.ep-sec{background:var(--glass2);border:1px solid var(--border);border-radius:11px;padding:13px}
+.ep-st{font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:9px}
+.ep-st.o{color:var(--orange)}.ep-st.g{color:var(--green)}.ep-st.b{color:var(--blue)}
+.ep-gl{font-size:10px;color:var(--text3);font-weight:600;margin:7px 0 4px;letter-spacing:0.5px}
+.ep-item{display:flex;align-items:center;justify-content:space-between;padding:6px 9px;background:#ffffff06;border-radius:7px;border:1px solid var(--border);margin-bottom:3px}
+.ep-in{font-size:12px;color:var(--text2)}
+.ep-rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;font-family:inherit;padding:2px 5px}
+.ep-rm:hover{color:#ff5c5c}
+.ep-inputs{display:flex;flex-direction:column;gap:5px;margin-top:7px}
+.ep-inputs input{font-size:12px;padding:7px 11px;background:#ffffff06;border:1px solid var(--border2);border-radius:7px;color:var(--text);outline:none;font-family:inherit;width:100%}
+.ep-inputs input::placeholder{color:var(--text3)}
+.ep-inputs input:focus{border-color:#3a4a8a}
+.ep-btn{font-size:11px;font-weight:700;padding:7px 14px;border-radius:7px;border:1px solid;cursor:pointer;width:100%;font-family:inherit;margin-top:2px}
+.ep-btn.o{background:#ff934015;color:var(--orange);border-color:#ff934030}
+.ep-btn.g{background:#3de5a015;color:var(--green);border-color:#3de5a030}
+.ep-btn.b{background:#5b9fff15;color:var(--blue);border-color:#5b9fff30}
+.ep-dv{height:1px;background:var(--border);margin:5px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="noc-badge">NOC</div>
+      <div class="tb-title">Distribución de Turno</div>
+      <div class="tb-sep"></div>
+      <div class="ass-pill">
+        <div class="ap-dot"></div>
+        <div class="ap-label">Incidentes Assurance Specialist</div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div>
+        <div class="clock" id="clock">00:00:00</div>
+        <div class="clock-date" id="cdate">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- COL IZQUIERDA: Caídas + Degradaciones -->
+    <div class="left-col">
+
+      <!-- CAÍDAS -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="phdr-dot dot-o"></div>
+          <div class="panel-title">Caídas totales</div>
+        </div>
+        <div class="panel-body">
+          <div class="clients-wrap" id="caida-clients"></div>
+          <div id="caida-agents" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+      </div>
+
+      <!-- DEGRADACIONES -->
+      <div class="panel" style="flex:1">
+        <div class="panel-hdr">
+          <div class="phdr-dot dot-g"></div>
+          <div class="panel-title">Degradaciones — Equipo CEC</div>
+        </div>
+        <div id="deg-n1-banner-slot"></div>
+        <div class="panel-body">
+          <div class="deg-wrap" id="deg-wrap"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COL DERECHA: Anuncio + Torre LATAM -->
+    <div class="right-col">
+
+      <!-- ANUNCIO LINEAMIENTO -->
+      <div class="anuncio-panel">
+        <div class="anuncio-hdr">
+          <div class="anuncio-ico">📋</div>
+          <div class="anuncio-title">Lineamiento</div>
+        </div>
+        <div class="anuncio-body">
+          <div class="anuncio-rule">
+            <div class="anuncio-dot g"></div>
+            <div class="anuncio-text">
+    Se informa que las <strong>afectaciones parciales o degradaciones del servicio</strong>, tanto para clientes <strong>ISP</strong> como <strong>CEC</strong>, serán gestionadas por el <strong>equipo de CEC</strong>. Por su parte, los casos que presenten una <strong>caída total del servicio</strong> serán atendidos por el <strong>equipo de N1 Express</strong>.
+</div>
+          </div>
+
+          <div class="deg-status">
+            <div id="deg-badge"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TORRE LATAM -->
+      <div class="torre-panel">
+        <div class="torre-hdr">
+          <div class="torre-ico">🌎</div>
+          <div>
+            <div class="torre-title-txt">Torre LATAM</div>
+            <div class="torre-sub-txt">Vueltas por turno y región</div>
+          </div>
+        </div>
+        <div class="torre-body" id="torre-body"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<button class="edit-btn" onclick="openPanel()">✎ Editar</button>
+<div class="edit-overlay" id="overlay" onclick="closePanel()"></div>
+<div class="edit-panel" id="editPanel" style="display:none">
+  <div class="ep-hdr">
+    <div class="ep-title">Editar agentes</div>
+    <button class="ep-close" onclick="closePanel()">✕</button>
+  </div>
+  <div id="ep-body"></div>
+</div>
+
+<script>
+const S={
+  caida:{
+    clients:["CIRION","GBM","WOM","CLARO (BBVA)","ENEL","CELSIA INTERNET","SISTEMAS SATELITALES"],
+    agentes:[
+      {nombre:"Arnold D. Ordoñez Martínez",nota:""},
+      {nombre:"L. Felipe Morales Ríos",nota:"Hasta las 17:00"}
+    ]
+  },
+  degs:[
+    {clients:["CIRION","VIRGIN","S3","SONDA","CELSIA INTERNET","SISTEMAS SATELITALES"],agentes:[{nombre:"Gustavo Adolfo Rojas Bueno",nota:""}]},
+    {clients:["WOM","CLARO (BBVA)"],agentes:[{nombre:"Diego Alejandro Reyes Forero",nota:""}]},
+    {clients:["GBM"],agentes:[{nombre:"Diego Fernando Monterroso Alonzo",nota:""}]}
+  ],
+  torre:[
+    {nombre:"Omix",turno:"6:00 am – 2:00 pm",regiones:["PA","CR","HN","PE"]},
+    {nombre:"Jaider Jaramillo",turno:"6:00 am – 2:00 pm",regiones:["GT","NI","SV","MX"]},
+    {nombre:"Ivan Pinto",turno:"2:00 pm – 10:00 pm",regiones:["PA","CR","HN","PE"]},
+    {nombre:"Hernan Peralta",turno:"2:00 pm – 10:00 pm",regiones:["GT","NI","SV","MX"]},
+    {nombre:"María Castillo",turno:"10:00 pm – 6:00 am",regiones:["LATAM"]}
+  ]
+};
+
+function ini(n){return n.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()}
+
+function renderCaida(){
+  document.getElementById('caida-clients').innerHTML=
+    S.caida.clients.map(c=>`<span class="ctag ctag-o">${c}</span>`).join('');
+  document.getElementById('caida-agents').innerHTML=
+    S.caida.agentes.map(a=>`
+      <div class="agent-card">
+        <div class="avatar av-o">${ini(a.nombre)}</div>
+        <div><div class="agent-name">${a.nombre}</div>${a.nota?`<div class="agent-note">⏱ ${a.nota}</div>`:''}</div>
+      </div>`).join('') || noAg();
+}
+
+function renderDegs(){
+  document.getElementById('deg-wrap').innerHTML=
+    S.degs.map(d=>`
+      <div class="deg-group">
+        <div class="deg-group-top">${d.clients.map(c=>`<span class="ctag ctag-g">${c}</span>`).join('')}</div>
+        <div class="deg-group-body">${
+          d.agentes.map(a=>`
+            <div class="agent-card" style="background:var(--glass);border-color:var(--border)">
+              <div class="avatar av-g">${ini(a.nombre)}</div>
+              <div><div class="agent-name">${a.nombre}</div>${a.nota?`<div class="agent-note">⏱ ${a.nota}</div>`:''}</div>
+            </div>`).join('') || noAg()
+        }</div>
+      </div>`).join('');
+}
+
+function renderTorre(){
+  document.getElementById('torre-body').innerHTML=
+    S.torre.map(a=>`
+      <div class="torre-col">
+        <div class="shift-badge"><div class="shift-dot"></div>${a.turno}</div>
+        <div class="reg-tags">${a.regiones.map(r=>`<span class="reg-tag${r==='LATAM'?' latam':''}">${r}</span>`).join('')}</div>
+        <div class="torre-name">${a.nombre}</div>
+      </div>`).join('');
+}
+
+function noAg(){return`<div style="color:var(--text3);font-size:12px;padding:6px">Sin agentes asignados</div>`}
+function renderAll(){renderCaida();renderDegs();renderTorre()}
+
+function updateDegBadge(h){
+  const el=document.getElementById('deg-badge');
+  const banner=document.getElementById('deg-n1-banner-slot');
+  const active=(h>=8&&h<18);
+  if(el){
+    el.innerHTML=active
+      ?`<div class="deg-active-badge"><div class="d-dot"></div><div class="d-lbl">Degradaciones activas</div><div class="d-time">8:00 am — 6:00 pm</div></div>`
+      :``;
+  }
+  if(banner){
+    banner.innerHTML=active?'':`<div class="deg-n1-banner"><div class="dnb-dot"></div><span class="dnb-text">Fuera de horario —</span><span class="dnb-bold">Van para N1</span></div>`;
+  }
+}
+
+function renderPanel(){
+  const body=document.getElementById('ep-body');body.innerHTML='';
+  const s1=ms('Caídas — N1 Express','o');
+  S.caida.agentes.forEach((a,i)=>s1.appendChild(mi(`${a.nombre}${a.nota?' · '+a.nota:''}`,()=>{S.caida.agentes.splice(i,1);renderAll();renderPanel()})));
+  s1.appendChild(minp(['c-n','c-no'],['Nombre…','Nota (opcional)'],'o',()=>{const n=gv('c-n');if(!n)return;S.caida.agentes.push({nombre:n,nota:gv('c-no')});renderAll();renderPanel()}));
+  body.appendChild(s1);
+  const s2=ms('Degradaciones — CEC','g');
+  S.degs.forEach((d,di)=>{
+    const gl=document.createElement('div');gl.className='ep-gl';gl.textContent=d.clients.slice(0,3).join(', ')+(d.clients.length>3?' …':'');s2.appendChild(gl);
+    d.agentes.forEach((a,ai)=>s2.appendChild(mi(`${a.nombre}${a.nota?' · '+a.nota:''}`,()=>{S.degs[di].agentes.splice(ai,1);renderAll();renderPanel()})));
+    s2.appendChild(minp([`d-n-${di}`,`d-no-${di}`],['Nombre…','Nota (opcional)'],'g',()=>{const n=gv(`d-n-${di}`);if(!n)return;S.degs[di].agentes.push({nombre:n,nota:gv(`d-no-${di}`)});renderAll();renderPanel()}));
+    if(di<S.degs.length-1){const dv=document.createElement('div');dv.className='ep-dv';s2.appendChild(dv)}
+  });
+  body.appendChild(s2);
+  const s3=ms('Torre LATAM','b');
+  S.torre.forEach((a,i)=>s3.appendChild(mi(`${a.nombre} · ${a.turno} · ${a.regiones.join(',')}`,()=>{S.torre.splice(i,1);renderAll();renderPanel()})));
+  s3.appendChild(minp(['a-n','a-t','a-r'],['Nombre…','Turno (ej: 6:00 am – 2:00 pm)','Regiones (ej: PA,CR,HN)'],'b',()=>{const n=gv('a-n');if(!n)return;const r=gv('a-r');S.torre.push({nombre:n,turno:gv('a-t')||'—',regiones:r?r.split(',').map(x=>x.trim()):[]});renderAll();renderPanel()}));
+  body.appendChild(s3);
+}
+
+function ms(t,c){const d=document.createElement('div');d.className='ep-sec';d.innerHTML=`<div class="ep-st ${c}">${t}</div>`;return d}
+function mi(text,fn){const d=document.createElement('div');d.className='ep-item';d.innerHTML=`<span class="ep-in">${text}</span>`;const b=document.createElement('button');b.className='ep-rm';b.textContent='✕';b.onclick=fn;d.appendChild(b);return d}
+function minp(ids,ph,cls,fn){const w=document.createElement('div');w.className='ep-inputs';ids.forEach((id,i)=>{const inp=document.createElement('input');inp.id=id;inp.placeholder=ph[i];w.appendChild(inp)});const b=document.createElement('button');b.className=`ep-btn ${cls}`;b.textContent='+ Agregar';b.onclick=fn;w.appendChild(b);return w}
+function gv(id){const e=document.getElementById(id);return e?e.value.trim():''}
+function openPanel(){document.getElementById('overlay').classList.add('open');document.getElementById('editPanel').style.display='flex';renderPanel()}
+function closePanel(){document.getElementById('overlay').classList.remove('open');document.getElementById('editPanel').style.display='none'}
+
+const DAYS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const MONTHS=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+function tick(){
+  const n=new Date(),h=n.getHours();
+  document.getElementById('clock').textContent=[h,n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');
+  document.getElementById('cdate').textContent=`${DAYS[n.getDay()]} ${n.getDate()} ${MONTHS[n.getMonth()]} ${n.getFullYear()}`;
+  updateDegBadge(h);
+}
+renderAll();tick();setInterval(tick,1000);
+</script>
+</body>
+</html>
